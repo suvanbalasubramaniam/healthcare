@@ -16,7 +16,7 @@ pre-visit summary for a doctor.
 Symptoms:
 ${symptoms}
 
-Return ONLY valid JSON in exactly this format:
+Return ONLY valid JSON:
 
 {
   "urgencyLevel": "Low",
@@ -37,15 +37,21 @@ Rules:
 `;
 
   try {
+    console.log("🤖 Sending symptoms to Gemini...");
+
     const response = await ai.models.generateContent({
       model: "gemini-3.6-flash",
-      contents: prompt
+      contents: prompt,
     });
+
+    console.log("🤖 GEMINI RAW RESPONSE:", response);
 
     const text = response.text?.trim();
 
+    console.log("🤖 GEMINI TEXT:", text);
+
     if (!text) {
-      throw new Error("Empty response from Gemini");
+      throw new Error("Gemini returned an empty response");
     }
 
     const cleanedText = text
@@ -54,12 +60,29 @@ Rules:
       .replace(/\s*```$/i, "")
       .trim();
 
-    const result = JSON.parse(cleanedText);
+    console.log("🤖 CLEANED GEMINI JSON:", cleanedText);
+
+    let result;
+
+    try {
+      result = JSON.parse(cleanedText);
+    } catch (parseError) {
+      console.error("❌ GEMINI JSON PARSE ERROR");
+      console.error("Raw text:", text);
+
+      throw new Error(
+        `Gemini returned invalid JSON: ${text}`
+      );
+    }
 
     if (
-      !["Low", "Medium", "High"].includes(result.urgencyLevel)
+      !["Low", "Medium", "High"].includes(
+        result.urgencyLevel
+      )
     ) {
-      throw new Error("Invalid urgency level returned by AI");
+      throw new Error(
+        `Invalid urgency level: ${result.urgencyLevel}`
+      );
     }
 
     if (
@@ -67,15 +90,21 @@ Rules:
       !Array.isArray(result.suggestedQuestions) ||
       result.suggestedQuestions.length !== 3
     ) {
-      throw new Error("Invalid AI response structure");
+      throw new Error(
+        "Gemini response does not contain the required fields"
+      );
     }
+
+    console.log("✅ PRE-VISIT AI SUMMARY:", result);
 
     return result;
 
   } catch (error) {
-    console.error("Pre-visit AI error:", error);
+    console.error("❌ PRE-VISIT AI ERROR:", error);
 
-    return null;
+    // IMPORTANT:
+    // Do NOT silently return null while debugging.
+    throw error;
   }
 };
 
@@ -108,37 +137,46 @@ Rules:
 `;
 
   try {
+    console.log("🤖 Calling Gemini for post-visit summary...");
+
     const response = await ai.models.generateContent({
       model: "gemini-3.6-flash",
-      contents: prompt
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
     });
 
     const text = response.text?.trim();
+
+    console.log(
+      "🤖 POST-VISIT GEMINI RESPONSE:",
+      text
+    );
 
     if (!text) {
       throw new Error("Empty response from Gemini");
     }
 
-    const cleanedText = text
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
-
-    const result = JSON.parse(cleanedText);
+    const result = JSON.parse(text);
 
     if (
       !result.patientSummary ||
       !result.medicationSchedule ||
       !result.followUpSteps
     ) {
-      throw new Error("Invalid post-visit AI response structure");
+      throw new Error(
+        "Invalid post-visit AI response structure"
+      );
     }
 
     return result;
 
   } catch (error) {
-    console.error("Post-visit AI error:", error);
+    console.error(
+      "❌ POST-VISIT AI ERROR:",
+      error
+    );
 
     return null;
   }

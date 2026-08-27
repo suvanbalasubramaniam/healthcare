@@ -11,6 +11,8 @@ import visitRoutes from "./routes/visitRoutes.js";
 import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import { startMedicationReminderJob } from "./jobs/medicationReminderJob.js";
 import { startEmailWorker } from "./jobs/emailWorker.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import metricsRoutes from "./routes/metricsRoutes.js";
 
 const app = express();
 
@@ -43,6 +45,9 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+app.use("/api/metrics", metricsRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use("/api/auth", authRoutes);
 

@@ -106,14 +106,18 @@ export const createVisit = async (doctorUserId, data) => {
         diagnosis: diagnosis || null,
 
         patientSummary:
-          generatedSummary?.patientSummary ||
-          patientSummary ||
-          null,
+  generatedSummary?.patientSummary ||
+  patientSummary ||
+  null,
 
-        followUpInstructions:
-          generatedSummary?.followUpSteps ||
-          followUpInstructions ||
-          null,
+medicationSchedule:
+  generatedSummary?.medicationSchedule ||
+  null,
+
+followUpInstructions:
+  generatedSummary?.followUpSteps ||
+  followUpInstructions ||
+  null,
 
         prescriptions: {
           create: prescriptions.map((prescription) => ({

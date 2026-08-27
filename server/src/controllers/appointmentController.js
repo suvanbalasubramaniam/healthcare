@@ -35,7 +35,9 @@ export const createAppointmentController = async (req, res) => {
 
 export const getPatientAppointmentsController = async (req, res) => {
   try {
-    const appointments = await getPatientAppointments(req.user.id);
+    const appointments = await getPatientAppointments(
+      req.user.id
+    );
 
     return res.status(200).json({
       success: true,
@@ -46,16 +48,21 @@ export const getPatientAppointmentsController = async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    return res.status(400).json({
+    return res.status(
+      error.statusCode || 400
+    ).json({
       success: false,
       message: error.message
     });
   }
 };
 
+
 export const getDoctorAppointmentsController = async (req, res) => {
   try {
-    const appointments = await getDoctorAppointments(req.user.id);
+    const appointments = await getDoctorAppointments(
+      req.user.id
+    );
 
     return res.status(200).json({
       success: true,
@@ -66,7 +73,9 @@ export const getDoctorAppointmentsController = async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    return res.status(400).json({
+    return res.status(
+      error.statusCode || 400
+    ).json({
       success: false,
       message: error.message
     });

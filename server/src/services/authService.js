@@ -119,3 +119,47 @@ export const getUserById = async (userId) => {
     }
   });
 };
+
+export const createAdmin = async ({
+  email,
+  password,
+  firstName,
+  lastName,
+  phone
+}) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (existingUser) {
+    const error = new Error(
+      "An account with this email already exists"
+    );
+
+    error.statusCode = 409;
+    throw error;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const admin = await prisma.user.create({
+    data: {
+      email,
+      passwordHash,
+      firstName,
+      lastName,
+      phone,
+      role: "ADMIN"
+    }
+  });
+
+  return {
+    id: admin.id,
+    email: admin.email,
+    firstName: admin.firstName,
+    lastName: admin.lastName,
+    phone: admin.phone,
+    role: admin.role,
+    status: admin.status
+  };
+};

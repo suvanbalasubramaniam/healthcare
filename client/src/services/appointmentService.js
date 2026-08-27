@@ -1,6 +1,9 @@
 import api from "./api";
 
-// Create appointment
+// ============================================================
+// CREATE APPOINTMENT
+// ============================================================
+
 export const createAppointment = async (appointmentData) => {
   const response = await api.post(
     "/appointments",
@@ -10,10 +13,24 @@ export const createAppointment = async (appointmentData) => {
   return response.data?.data?.appointment;
 };
 
-// Get logged-in patient's appointments
+
+// ============================================================
+// GET LOGGED-IN PATIENT'S APPOINTMENTS
+// ============================================================
+
+export const getPatientAppointments = async () => {
+  const response = await api.get(
+    "/appointments/patient"
+  );
+
+  return response.data?.data?.appointments || [];
+};
 
 
-// Get logged-in doctor's appointments
+// ============================================================
+// GET LOGGED-IN DOCTOR'S APPOINTMENTS
+// ============================================================
+
 export const getDoctorAppointments = async () => {
   const response = await api.get(
     "/appointments/doctor"
@@ -22,20 +39,61 @@ export const getDoctorAppointments = async () => {
   return response.data?.data?.appointments || [];
 };
 
-// Get appointment by ID
 
+// ============================================================
+// GET APPOINTMENT BY ID
+// ============================================================
 
-// Cancel appointment
+export const getAppointmentById = async (
+  appointmentId
+) => {
+  const response = await api.get(
+    `/appointments/${appointmentId}`
+  );
 
-export const getPatientAppointments = async () => {
-  const response = await api.get("/appointments/patient");
-
-  return response.data?.data?.appointments || [];
+  return response.data?.data?.appointment;
 };
 
-export const cancelAppointment = async (appointmentId) => {
+
+// ============================================================
+// CANCEL APPOINTMENT
+// ============================================================
+
+export const cancelAppointment = async (
+  appointmentId
+) => {
   const response = await api.put(
     `/appointments/${appointmentId}/cancel`
+  );
+
+  return response.data?.data?.appointment;
+};
+
+
+// ============================================================
+// CONFIRM APPOINTMENT
+// ============================================================
+
+export const confirmAppointment = async (
+  appointmentId
+) => {
+  const response = await api.put(
+    `/appointments/${appointmentId}/confirm`
+  );
+
+  return response.data?.data?.appointment;
+};
+
+
+// ============================================================
+// COMPLETE APPOINTMENT
+// ============================================================
+
+export const completeAppointment = async (
+  appointmentId
+) => {
+  const response = await api.put(
+    `/appointments/${appointmentId}/complete`
   );
 
   return response.data?.data?.appointment;

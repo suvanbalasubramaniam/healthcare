@@ -1,30 +1,45 @@
-import redisClient, { connectRedis } from "../config/redis.js";
+import redis from "../config/redis.js";
 
-const EMAIL_QUEUE = "healthcare:email_queue";
+const EMAIL_QUEUE = "email_queue";
 
-export const addEmailJob = async (emailData) => {
-  await connectRedis();
+// ============================================================
+// ADD EMAIL JOB
+// ============================================================
 
-  const job = {
-    ...emailData,
-    attempts: 0,
-    createdAt: new Date().toISOString()
-  };
+export const addEmailJob = async (job) => {
+  if (!job) {
+    throw new Error("Email job is required");
+  }
 
-  await redisClient.lPush(
+  if (!job.to) {
+    throw new Error("Email recipient is required");
+  }
+
+  if (!job.subject) {
+    throw new Error("Email subject is required");
+  }
+
+  if (!job.content) {
+    throw new Error("Email content is required");
+  }
+
+  await redis.lPush(
     EMAIL_QUEUE,
     JSON.stringify(job)
   );
 
-  console.log("📨 Email job added to queue");
-
-  return job;
+  console.log(
+    `📬 Email job queued for ${job.to}`
+  );
 };
 
-export const getEmailJob = async () => {
-  await connectRedis();
 
-  const result = await redisClient.brPop(
+// ============================================================
+// GET EMAIL JOB
+// ============================================================
+
+export const getEmailJob = async () => {
+  const result = await redis.brPop(
     EMAIL_QUEUE,
     0
   );
@@ -33,7 +48,7 @@ export const getEmailJob = async () => {
     return null;
   }
 
-  return JSON.parse(result.element);
-};
+  const job = JSON.parse(result.element);
 
-export { EMAIL_QUEUE };
+  return job;
+};
